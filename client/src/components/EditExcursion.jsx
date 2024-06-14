@@ -155,22 +155,24 @@ const EditExcursion = () => {
       try {
         const response = await axios.get(`http://localhost:1000/api/triptrack/excursions/${id}`);
         const excursion = response.data;
+        const scheduleResponse = await axios.get(`http://localhost:1000/api/triptrack/excursions/${id}/schedule`);
+        const schedule = scheduleResponse.data.map(s => s.date_time);
+  
         setFormData({
           title: excursion.title,
           image: excursion.image,
           type: excursion.type,
-          date_times: excursion.date_time, // Iš kiekvieno objekto ištraukiame tik data_time
+          date_times: schedule,
           duration: excursion.duration,
           price: excursion.price,
         });
-        console.log(excursion);
       } catch (error) {
         console.error('Error fetching excursion:', error);
       } finally {
         setLoading(false);
       }
     };
-
+  
     fetchExcursion();
   }, [id]);
 
@@ -243,11 +245,11 @@ const EditExcursion = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validateForm()) {
-      return; // Do not proceed if the form is invalid
+      return;
     }
-
+  
     setLoading(true);
-
+  
     try {
       await axios.patch(`http://localhost:1000/api/triptrack/excursions/${id}`, {
         title: formData.title,
@@ -256,12 +258,11 @@ const EditExcursion = () => {
         duration: formData.duration,
         price: formData.price,
       });
-
-      // Update each date and time
-      await axios.patch(`http://localhost:1000/api/triptrack/excursions/${id}/updateTimeSlot`, {
-        date_times: formData.date_times, // Perduodame masyva
+  
+      await axios.patch(`http://localhost:1000/api/triptrack/excursions/${id}/schedule`, {
+        date_times: formData.date_times,
       });
-
+  
       navigate(`/excursions/${id}`);
     } catch (error) {
       setErrors({ api: 'Error updating excursion: ' + error.message });

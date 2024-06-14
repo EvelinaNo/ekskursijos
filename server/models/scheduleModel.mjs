@@ -7,12 +7,14 @@ const scheduleModel = {
         "SELECT * FROM schedule WHERE excursion_id = $1",
         [excursionId]
       );
+      console.log('getExcursionSchedule:', schedule.rows);
       return schedule.rows;
     } catch (error) {
       console.error(error);
       throw error;
     }
   },
+
 
   // Naujos datos ir laiko ekskursijai pridejimas
   addExcursionTimeSlot: async (excursion_id, date_time) => {

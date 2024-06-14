@@ -179,7 +179,7 @@ const excursionsController = {
   getExcursionSchedule: async (req, res) => {
     try {
       const { id } = req.params;
-      const schedule = await excursionsModel.getExcursionSchedule(id);
+      const schedule = await excursionsModel.getScheduleByExcursionId(id);
       res.status(200).json(schedule);
     } catch (error) {
       console.error(error);
@@ -188,26 +188,17 @@ const excursionsController = {
   },
 
   // Ekskursijos datos ir laiko atnaujinimas
-  updateExcursionTimeSlot: async (req, res) => {
+  updateExcursionSchedule : async (req, res) => {
     try {
       const { id } = req.params;
-      const { date_times } = req.body; // Tarkime, kad tai masyvas
-
-      const updatedTimeSlots = [];
-      for (const date_time of date_times) {
-        const updatedTimeSlot = await excursionsModel.upsertExcursionTimeSlot(
-          id,
-          date_time
-        );
-        updatedTimeSlots.push(updatedTimeSlot);
-      }
-
+      const { date_times } = req.body;
+  
+      const updatedTimeSlots = await excursionsModel.updateSchedule(id, date_times);
+  
       res.status(200).json(updatedTimeSlots);
     } catch (error) {
       console.error(error);
-      res
-        .status(500)
-        .json({ message: "An error occurred while updating time slots" });
+      res.status(500).json({ message: "An error occurred while updating time slots" });
     }
   },
 

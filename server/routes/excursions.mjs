@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import excursionsController from "../controller/excursionsController.mjs";
 import { validate } from "../middleware/schemaValidator.mjs";
 import { excursionValidationSchema } from "../validators/excursionValidator.mjs";
+import scheduleModel from "../models/scheduleModel.mjs";
 
 dotenv.config();
 
@@ -43,9 +44,10 @@ router.get(
 // ekskursijos schedule gavimas
 router.get("/:id/schedule", excursionsController.getExcursionSchedule);
 
+// ekskursijos schedule atnaujinimas
 router.patch(
-  "/:id/updateTimeSlot",
-  excursionsController.updateExcursionTimeSlot
+  "/:id/schedule",
+  excursionsController.updateExcursionSchedule 
 );
 
 // registracijos sukurimas

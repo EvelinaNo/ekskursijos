@@ -107,6 +107,46 @@ const excursionsModel = {
     }
   },
 
+  // prieinamu datu ir laiku gavimas pagal ekskursijos id
+  getScheduleByExcursionId: async (id) => {
+    try {
+      const schedule = await pool.query(
+        "SELECT * FROM schedule WHERE excursion_id = $1",
+        [id]
+      );
+      console.log('getScheduleByExcursionId:', schedule.rows);
+      return schedule.rows;
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  },
+
+  updateSchedule: async (id, dateTimes) => {
+    try {
+      // Удаляем старые записи
+      await pool.query("DELETE FROM schedule WHERE excursion_id = $1", [id]);
+  
+      // Вставляем новые записи
+      const insertPromises = dateTimes.map((dateTime) =>
+        pool.query("INSERT INTO schedule (excursion_id, date_time) VALUES ($1, $2)", [
+          id,
+          dateTime,
+        ])
+      );
+      await Promise.all(insertPromises);
+  
+      // Получаем обновленное расписание
+      const result = await pool.query("SELECT date_time FROM schedule WHERE excursion_id = $1", [id]);
+      const updatedSchedule = result.rows.map(row => row.date_time);
+  
+      return updatedSchedule; // Возвращаем простой массив дат
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  },
+
   createReview: async (rating, comment, user_id, excursion_id) => {
     try {
       const result = await pool.query(
@@ -170,46 +210,32 @@ const excursionsModel = {
     }
   },
 
-  // prieinamu datu ir laiku gavimas
-  getExcursionSchedule: async (id) => {
-    try {
-      const schedule = await pool.query(
-        "SELECT date_time FROM schedule WHERE excursion_id = $1",
-        [id]
-      );
-      return schedule.rows;
-    } catch (error) {
-      console.error(error);
-      throw error;
-    }
-  },
-
   // Ekskursijos datos ir laiko atnaujinimas
-  upsertExcursionTimeSlot: async (excursion_id, date_time) => {
-    try {
-      const existingSlot = await pool.query(
-        "SELECT * FROM schedule WHERE excursion_id = $1 AND date_time = $2",
-        [excursion_id, date_time]
-      );
+  // upsertExcursionTimeSlot: async (excursion_id, date_time) => {
+  //   try {
+  //     const existingSlot = await pool.query(
+  //       "SELECT * FROM schedule WHERE excursion_id = $1 AND date_time = $2",
+  //       [excursion_id, date_time]
+  //     );
 
-      if (existingSlot.rows.length > 0) {
-        const result = await pool.query(
-          "UPDATE schedule SET date_time = $1 WHERE excursion_id = $2 AND date_time = $3 RETURNING *",
-          [date_time, excursion_id, existingSlot.rows[0].date_time]
-        );
-        return result.rows[0];
-      } else {
-        const result = await pool.query(
-          "INSERT INTO schedule (excursion_id, date_time) VALUES ($1, $2) RETURNING *",
-          [excursion_id, date_time]
-        );
-        return result.rows[0];
-      }
-    } catch (error) {
-      console.error(error);
-      throw error;
-    }
-  },
+  //     if (existingSlot.rows.length > 0) {
+  //       const result = await pool.query(
+  //         "UPDATE schedule SET date_time = $1 WHERE excursion_id = $2 AND date_time = $3 RETURNING *",
+  //         [date_time, excursion_id, existingSlot.rows[0].date_time]
+  //       );
+  //       return result.rows[0];
+  //     } else {
+  //       const result = await pool.query(
+  //         "INSERT INTO schedule (excursion_id, date_time) VALUES ($1, $2) RETURNING *",
+  //         [excursion_id, date_time]
+  //       );
+  //       return result.rows[0];
+  //     }
+  //   } catch (error) {
+  //     console.error(error);
+  //     throw error;
+  //   }
+  // },
   // vartotojo registravimas i ekskursija
   createRegistration: async (user_id, excursion_id, name, date_time) => {
     try {
