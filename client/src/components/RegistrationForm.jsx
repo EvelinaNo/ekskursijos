@@ -66,7 +66,10 @@ const SubmitButton = styled.button`
   border-radius: 5px;
   font-size: 0.9rem;
   cursor: pointer;
-  transition: background-color 0.3s, color 0.3s, transform 0.3s;
+  transition:
+    background-color 0.3s,
+    color 0.3s,
+    transform 0.3s;
   margin-top: 20px;
 
   &:hover {
@@ -95,7 +98,7 @@ const ErrorMessage = styled.p`
 `;
 
 const SignLink = styled(Link)`
-color: #000;
+  color: #000;
   text-decoration: none;
 
   &:hover {

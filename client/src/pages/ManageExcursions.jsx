@@ -1,8 +1,8 @@
-import { useState, useEffect, useContext } from "react";
-import axios from "axios";
+import { useState, useEffect, useContext } from 'react';
+import axios from 'axios';
 import styled from 'styled-components';
 import { format } from 'date-fns';
-import { AuthContext } from "../utils/AuthContext";
+import { AuthContext } from '../utils/AuthContext';
 
 const PageContainer = styled.div`
   padding: 7rem 3rem 2rem 3rem;
@@ -19,15 +19,15 @@ const Title = styled.p`
 `;
 
 const ExcursionsContainer = styled.div`
-display: flex;
-flex-wrap: wrap;
-gap: 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
 `;
 
 const ExcursionItem = styled.div`
-border: 1px solid #dddddd;
-border-radius: 0.25rem;
-padding: 1rem;
+  border: 1px solid #dddddd;
+  border-radius: 0.25rem;
+  padding: 1rem;
   width: calc(33.33% - 1rem);
 `;
 
@@ -61,14 +61,16 @@ const ExcursionDate = styled.div`
 `;
 
 const ConfirmButton = styled.button`
-  background-color: #4CAF50;
+  background-color: #4caf50;
   color: white;
   border: none;
   padding: 0.5rem 1rem;
   border-radius: 0.25rem;
   cursor: pointer;
   font-size: 0.875rem;
-  transition: background-color 0.3s, transform 0.3s;
+  transition:
+    background-color 0.3s,
+    transform 0.3s;
 
   &:hover {
     background-color: #45a049;
@@ -82,7 +84,7 @@ const ConfirmButton = styled.button`
 `;
 
 const ManageExcursions = () => {
-  const { user } = useContext(AuthContext);
+  // const { user } = useContext(AuthContext);
   const [excursions, setExcursions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -105,16 +107,14 @@ const ManageExcursions = () => {
   const confirmRegistration = async (registrationId) => {
     try {
       await axios.put(`http://localhost:1000/api/triptrack/registrations/admin/confirm/${registrationId}`);
-      setExcursions(prevExcursions => 
-        prevExcursions.map(excursion => 
-          excursion.registration_id === registrationId 
-            ? { ...excursion, confirmation: true }
-            : excursion
-        )
+      setExcursions((prevExcursions) =>
+        prevExcursions.map((excursion) =>
+          excursion.registration_id === registrationId ? { ...excursion, confirmation: true } : excursion,
+        ),
       );
     } catch (error) {
-      console.error("Unable to confirm registration:", error.message);
-      alert("Unable to confirm registration. Please try again later.");
+      console.error('Unable to confirm registration:', error.message);
+      alert('Unable to confirm registration. Please try again later.');
     }
   };
 
@@ -132,8 +132,8 @@ const ManageExcursions = () => {
               <UserName>User: {excursion.name}</UserName>
               <ExcursionDate>{format(new Date(excursion.date_time), 'yyyy.MM.dd HH:mm') + ' val.'}</ExcursionDate>
             </ExcursionInfo>
-            <ConfirmButton 
-              onClick={() => confirmRegistration(excursion.registration_id)} 
+            <ConfirmButton
+              onClick={() => confirmRegistration(excursion.registration_id)}
               disabled={excursion.confirmation}
             >
               {excursion.confirmation ? 'Confirmed' : 'Confirm'}

@@ -42,11 +42,12 @@ router.post(
   usersController.login
 );
 
-// userio ekskursiju gavimas
-router.get("/my-excursions/:userId", usersController.getUserExcursions);
+// userio ekskursiju gavimas, netrinti
+router.get("/:userId/my-excursions", usersController.getUserExcursions);
+
+// router.get("/:userId/my-excursions/:registrationId", usersController.update);
 
 // userio ekskursiju atsaukimas
 router.delete("/:registrationId", usersController.cancelRegistration);
-
 
 export default router;

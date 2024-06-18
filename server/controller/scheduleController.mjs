@@ -12,7 +12,7 @@ const scheduleController = {
     }
   },
 
-  // Naujos datos ir laiko ekskursijai pridejimas
+  // Naujos datos ir laiko ekskursijai pridejimas (netrinti)
   addExcursionTimeSlot: async (req, res) => {
     try {
       const { excursion_id, date_time } = req.body;
@@ -29,7 +29,7 @@ const scheduleController = {
         .json({ message: "An error occurred while adding time slot" });
     }
   },
-
+// ekskursijos schedule trinimas (netrinti)
   deleteExcursionTimeSlot: async (req, res) => {
     try {
       const { id } = req.params;

@@ -2,10 +2,8 @@ import axios from 'axios';
 import { useContext, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import styled from 'styled-components';
-import SyncLoader from "react-spinners/SyncLoader";
+import SyncLoader from 'react-spinners/SyncLoader';
 import { AuthContext } from '../utils/AuthContext';
-
-
 
 const ReviewContainer = styled.div`
   display: flex;
@@ -57,7 +55,6 @@ const Input = styled.input`
   }
 `;
 
-
 const TextArea = styled.textarea`
   height: 200px;
   padding: 5px;
@@ -83,7 +80,10 @@ const SubmitButton = styled.button`
   font-size: 0.9rem;
   border-radius: 4px;
   cursor: pointer;
-  transition: background-color 0.3s, color 0.3s, transform 0.3s;
+  transition:
+    background-color 0.3s,
+    color 0.3s,
+    transform 0.3s;
   margin-top: 20px;
   &:hover {
     background-color: #dddddd;
@@ -109,18 +109,16 @@ const ErrorMessage = styled.p`
 `;
 
 const AddReviewForm = () => {
-    const navigate = useNavigate();
+  const navigate = useNavigate();
   const [errors, setErrors] = useState(null);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
-    rating: "",
-    comment: "",
+    rating: '',
+    comment: '',
   });
   const { user } = useContext(AuthContext);
   const { id } = useParams();
   const userId = user ? user.id : null;
- 
-
 
   const handleChange = (e) => {
     setFormData({
@@ -129,24 +127,24 @@ const AddReviewForm = () => {
     });
   };
 
-// Validacija
-const validateForm = () => {
-  let valid = true;
-  const newErrors = {};
+  // Validacija
+  const validateForm = () => {
+    let valid = true;
+    const newErrors = {};
 
-  if (!formData.rating || formData.rating < 1 || formData.rating > 10) {
-    valid = false;
-    newErrors.rating = "Rating must be between 1 and 10.";
-  }
+    if (!formData.rating || formData.rating < 1 || formData.rating > 10) {
+      valid = false;
+      newErrors.rating = 'Rating must be between 1 and 10.';
+    }
 
-  if (!formData.comment || formData.comment.length < 2 || formData.comment.length > 10000) {
-    valid = false;
-    newErrors.comment = "Comment must be between 2 and 10000 characters long.";
-  }
+    if (!formData.comment || formData.comment.length < 2 || formData.comment.length > 10000) {
+      valid = false;
+      newErrors.comment = 'Comment must be between 2 and 10000 characters long.';
+    }
 
-  setErrors(newErrors);
-  return valid;
-};
+    setErrors(newErrors);
+    return valid;
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -157,26 +155,22 @@ const validateForm = () => {
     setLoading(true);
 
     try {
-        const response = await axios.post(
-          `http://localhost:1000/api/triptrack/excursions/${id}/addreview`,
-          {
-            rating: formData.rating,
-            comment: formData.comment,
-            user_id: userId,
-            excursion_id: id, 
-          }
-        );
-        console.log (response.data);
-       
-      navigate("/excursions");
+      const response = await axios.post(`http://localhost:1000/api/triptrack/excursions/${id}/addreview`, {
+        rating: formData.rating,
+        comment: formData.comment,
+        user_id: userId,
+        excursion_id: id,
+      });
+      console.log(response.data);
+
+      navigate('/excursions');
     } catch (error) {
-      setErrors({ api: "Error creating review: " + error.message });
-      console.error("Error creating review:", error);
+      setErrors({ api: 'Error creating review: ' + error.message });
+      console.error('Error creating review:', error);
     } finally {
       setLoading(false);
     }
   };
-
 
   return (
     <ReviewContainer>
@@ -214,7 +208,7 @@ const validateForm = () => {
 
         {loading ? (
           <LoadingContainer>
-            <SyncLoader color={"#dddddd"} loading={loading} size={20} />
+            <SyncLoader color={'#dddddd'} loading={loading} size={20} />
           </LoadingContainer>
         ) : (
           <SubmitButton type="submit">Add review</SubmitButton>

@@ -3,6 +3,7 @@ import { useContext, useEffect, useState } from 'react';
 import axios from 'axios';
 import styled from 'styled-components';
 import { AuthContext } from '../utils/AuthContext';
+import format from 'date-fns/format';
 
 const PageContainer = styled.div`
   padding: 7rem 3rem 2rem 3rem;
@@ -52,18 +53,6 @@ const Image = styled.img`
   border-radius: 0.25rem;
 `;
 
-const IconContainer = styled.p`
-  display: flex;
-  gap: 0.5rem;
-`;
-const StyledIcon = styled.img`
-  width: 2rem;
-  &:hover {
-    filter: brightness(0.5);
-    transform: scale(0.9);
-  }
-`;
-
 const Button = styled.button`
   background-color: #ffffff;
   color: #000;
@@ -88,45 +77,37 @@ const ExcursionDetails = () => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const { isAuthenticated, isAdmin } = useContext(AuthContext);
-  
-
   const [excursionSchedule, setExcursionSchedule] = useState([]);
 
   useEffect(() => {
-    const fetchExcursionDetails = async () => {
+    const fetchExcursion = async () => {
       try {
         const response = await axios.get(`http://localhost:1000/api/triptrack/excursions/${id}`);
         setExcursion(response.data);
-        console.log(response.data);
         setLoading(false);
+        const schedule = await fetchExcursionSchedule(response.data.id);
+        setExcursionSchedule(schedule);
       } catch (error) {
-        console.error('Failed to fetch excursion details:', error);
+        console.error('Ошибка при загрузке экскурсии:', error);
+        setLoading(false);
       }
     };
 
-    fetchExcursionDetails();
+    fetchExcursion();
   }, [id]);
 
-  useEffect(() => {
-    // kreipimasis i serveri, kad gauti info apie datas ir laikus
-    const fetchSchedule = async () => {
-      try {
-        const response = await axios.get(`http://localhost:1000/api/triptrack/schedule/${id}`);
-        setExcursionSchedule(response.data); // iset'inam gautus duomenis i usestate
-      } catch (error) {
-        console.error('Error fetching schedule:', error);
-      }
-    };
-
-    fetchSchedule(); // funkcijos iskvietimas laiku gavimui
-  }, [id]);
+  const fetchExcursionSchedule = async (excursionId) => {
+    try {
+      const response = await axios.get(`http://localhost:1000/api/triptrack/excursions/${excursionId}/schedule`);
+      return response.data;
+    } catch (error) {
+      console.error(`Ошибка при загрузке расписания для экскурсии ${excursionId}:`, error);
+      return [];
+    }
+  };
 
   if (loading) {
     return <p>Loading...</p>;
-  }
-
-  if (!excursion) {
-    return <p>Excursion not found</p>;
   }
 
   return (
@@ -151,6 +132,12 @@ const ExcursionDetails = () => {
                 <h2>Price:</h2>
                 <p>{excursion.price} €</p>
               </DetailItem>
+              <DetailItem>
+                {excursionSchedule.map((scheduleItem) => (
+                  <p key={scheduleItem.id}>{format(new Date(scheduleItem.date_time), 'yyyy.MM.dd HH:mm') + ' val.'}</p>
+                ))}
+              </DetailItem>
+
               <DetailItem>
                 <h2>Rating:</h2>
                 <p>{excursion.average_rating}</p>
@@ -177,7 +164,6 @@ const ExcursionDetails = () => {
                   </>
                 </DetailItem>
               )}
-
             </Details>
             {excursion.image && (
               <ImageContainer>

@@ -7,7 +7,7 @@ const scheduleModel = {
         "SELECT * FROM schedule WHERE excursion_id = $1",
         [excursionId]
       );
-      console.log('getExcursionSchedule:', schedule.rows);
+      console.log("getExcursionSchedule:", schedule.rows);
       return schedule.rows;
     } catch (error) {
       console.error(error);
@@ -15,8 +15,7 @@ const scheduleModel = {
     }
   },
 
-
-  // Naujos datos ir laiko ekskursijai pridejimas
+  // Naujos datos ir laiko ekskursijai pridejimas (netrinti)
   addExcursionTimeSlot: async (excursion_id, date_time) => {
     try {
       const result = await pool.query(
@@ -30,12 +29,12 @@ const scheduleModel = {
     }
   },
 
-  // Ekskursijos datos ir laiko pasalinimas
-  deleteExcursionTimeSlot: async (excursionId) => {
+  // Ekskursijos datos ir laiko pasalinimas (netrinti)
+  deleteExcursionTimeSlot: async (id) => {
     try {
       const result = await pool.query(
         "DELETE FROM schedule WHERE excursion_id = $1 RETURNING *",
-        [excursionId]
+        [id]
       );
       return result.rows[0];
     } catch (error) {

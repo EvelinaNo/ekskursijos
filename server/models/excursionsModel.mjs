@@ -1,4 +1,5 @@
 import { pool } from "../db/postgresConnection.mjs";
+import registrationsModel from "./registrationsModel.mjs";
 
 const excursionsModel = {
   getExcursions: async () => {
@@ -42,18 +43,25 @@ const excursionsModel = {
     }
   },
   createExcursion: async (title, image, type, duration, price) => {
+    let capacity = 1; // Default individualioms ekskursijoms
+    
+    if (type === 'group') {
+      capacity = 5; // Grupinems ekskursijoms
+    }
+  
     try {
       const result = await pool.query(
-        "INSERT INTO excursions (title, image, type, duration, price, average_rating) VALUES ($1, $2, $3, $4, $5, '0') RETURNING *",
-        [title, image, type, duration, price]
+        "INSERT INTO excursions (title, image, type, duration, price, capacity, average_rating) VALUES ($1, $2, $3, $4, $5, $6, '0') RETURNING *",
+        [title, image, type, duration, price, capacity]
       );
-
+  
       return result.rows[0];
     } catch (error) {
       console.error(error);
       throw error;
     }
   },
+
   deleteExcursion: async (id) => {
     try {
       const query = "DELETE FROM excursions WHERE id = $1";
@@ -107,14 +115,13 @@ const excursionsModel = {
     }
   },
 
-  // prieinamu datu ir laiku gavimas pagal ekskursijos id
+  // prieinamu datu ir laiku gavimas pagal ekskursijos id (netrinti!)
   getScheduleByExcursionId: async (id) => {
     try {
       const schedule = await pool.query(
         "SELECT * FROM schedule WHERE excursion_id = $1",
         [id]
       );
-      console.log('getScheduleByExcursionId:', schedule.rows);
       return schedule.rows;
     } catch (error) {
       console.error(error);
@@ -122,31 +129,45 @@ const excursionsModel = {
     }
   },
 
+  // schedule atnaujinimas (netrinti!)
   updateSchedule: async (id, dateTimes) => {
     try {
-      // Удаляем старые записи
+      // Patikriname ar yra registraciju
+      const registrationsQuery =
+        "SELECT COUNT(*) FROM registrations WHERE excursion_id = $1";
+      const registrationsResult = await pool.query(registrationsQuery, [id]);
+      const registrationsCount = parseInt(registrationsResult.rows[0].count);
+      // Jei yra registracijų, netrinam
+      if (registrationsCount > 0) {
+        throw new Error("Cannot delete schedule because registrations exist");
+      }
+
+      // Jei registracijų nėra, ištriname senus įrašus
       await pool.query("DELETE FROM schedule WHERE excursion_id = $1", [id]);
-  
-      // Вставляем новые записи
+
+      // Idedame naujus irasus
       const insertPromises = dateTimes.map((dateTime) =>
-        pool.query("INSERT INTO schedule (excursion_id, date_time) VALUES ($1, $2)", [
-          id,
-          dateTime,
-        ])
+        pool.query(
+          "INSERT INTO schedule (excursion_id, date_time) VALUES ($1, $2)",
+          [id, dateTime]
+        )
       );
       await Promise.all(insertPromises);
-  
-      // Получаем обновленное расписание
-      const result = await pool.query("SELECT date_time FROM schedule WHERE excursion_id = $1", [id]);
-      const updatedSchedule = result.rows.map(row => row.date_time);
-  
-      return updatedSchedule; // Возвращаем простой массив дат
+
+      // Gauname atnaujinta tvarkarasti
+      const result = await pool.query(
+        "SELECT date_time FROM schedule WHERE excursion_id = $1",
+        [id]
+      );
+      const updatedSchedule = result.rows.map((row) => row.date_time);
+
+      return updatedSchedule; // Graziname paprasta datu masyva
     } catch (error) {
       console.error(error);
       throw error;
     }
   },
-
+// atsiliepimo sukurimas, netrinti
   createReview: async (rating, comment, user_id, excursion_id) => {
     try {
       const result = await pool.query(
@@ -161,6 +182,24 @@ const excursionsModel = {
     }
   },
 
+  getReviewByUserAndExcursion: async (user_id, excursion_id) => {
+    try {
+      const query = 'SELECT * FROM ratings WHERE user_id = $1 AND excursion_id = $2';
+      const values = [user_id, excursion_id];
+  
+      const { rows } = await pool.query(query, values);
+  
+      // Grąžinti pirmą rastą atsiliepimą arba null, jei atsiliepimas nerastas
+      return rows.length > 0 ? rows[0] : null;
+    } catch (error) {
+      console.error('Error in getReviewByUserAndExcursion:', error.message);
+      throw error;
+    }
+  },
+
+
+
+  //salinam reitingus (netrinti)
   deleteRatingsByExcursionId: async (excursionId) => {
     try {
       const query = "DELETE FROM ratings WHERE excursion_id = $1";
@@ -195,7 +234,7 @@ const excursionsModel = {
       throw error;
     }
   },
-
+// netrinti
   updateAverageRating: async (excursion_id) => {
     try {
       const result = await pool.query(
@@ -236,31 +275,48 @@ const excursionsModel = {
   //     throw error;
   //   }
   // },
-  // vartotojo registravimas i ekskursija
+
+  // registracijis sukurimas , netrinti
   createRegistration: async (user_id, excursion_id, name, date_time) => {
     try {
-      const result = await pool.query(
-        "INSERT INTO registrations (user_id, excursion_id, name, date_time, confirmation) VALUES ($1, $2, $3, $4, 'false') RETURNING *",
-        [user_id, excursion_id, name, date_time]
+      // Tikrinama, ar vartotojas jau užsiregistravęs šiai ekskursijai
+      const isRegistered = await registrationsModel.isUserRegistered(
+        user_id,
+        excursion_id
       );
-      return result.rows[0];
+      if (isRegistered) {
+        throw new Error("The user is already registered for this excursion");
+      }
+
+      const query = `
+        INSERT INTO registrations (user_id, excursion_id, name, date_time)
+        VALUES ($1, $2, $3, $4)
+        RETURNING *
+      `;
+      const values = [user_id, excursion_id, name, date_time];
+
+      const { rows } = await pool.query(query, values);
+      return rows[0];
     } catch (error) {
-      console.error(error);
+      console.error("Error creating registration:", error);
       throw error;
     }
   },
 
-  hasUserVisitedExcursion: async (userId, excursionId) => {
-    try {
-      const query =
-        "SELECT * FROM visited_excursions WHERE user_id = $1 AND excursion_id = $2";
-      const result = await pool.query(query, [userId, excursionId]);
-      return result.rows.length > 0;
-    } catch (error) {
-      console.error(error);
-      throw error;
-    }
-  },
+  // vartotojo registravimas i ekskursija
+  // createRegistration: async (user_id, excursion_id, name, date_time) => {
+  //   try {
+  //     const result = await pool.query(
+  //       "INSERT INTO registrations (user_id, excursion_id, name, date_time, confirmation) VALUES ($1, $2, $3, $4, 'false') RETURNING *",
+  //       [user_id, excursion_id, name, date_time]
+  //     );
+  //     return result.rows[0];
+  //   } catch (error) {
+  //     console.error(error);
+  //     throw error;
+  //   }
+  // },
+
 };
 
 export default excursionsModel;

@@ -1,16 +1,16 @@
-import { createContext, useState, useEffect } from "react";
-import { jwtDecode } from "jwt-decode";
-import { apiClient } from "../api/apis";
+import { createContext, useState, useEffect } from 'react';
+import { jwtDecode } from 'jwt-decode';
+import { apiClient } from '../api/apis';
 
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
-  const [token, setToken] = useState(localStorage.getItem("token") || null);
-  const [user, setUser] = useState(JSON.parse(localStorage.getItem("user")) || null);
-  
+  const [token, setToken] = useState(localStorage.getItem('token') || null);
+  const [user, setUser] = useState(JSON.parse(localStorage.getItem('user')) || null);
+
   useEffect(() => {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem('token');
     if (token) {
       const user = jwtDecode(token);
 
@@ -23,7 +23,7 @@ export const AuthProvider = ({ children }) => {
 
   const loginUser = async (data) => {
     try {
-      const response = await apiClient.post("/users/login", {
+      const response = await apiClient.post('/users/login', {
         login: data.login,
         password: data.password,
       });
@@ -35,24 +35,24 @@ export const AuthProvider = ({ children }) => {
         const user = jwtDecode(token);
         // Naudojame localStorage.setItem('token', token), tai todėl, kad kai atnaujiname puslapį, tai mes neprarasime prisijungimo duomenų (token ir user)
 
-        localStorage.setItem("token", token);
-        localStorage.setItem("user", JSON.stringify(user));
+        localStorage.setItem('token', token);
+        localStorage.setItem('user', JSON.stringify(user));
         setToken(token);
         setUser(user);
 
         return { token, user };
       } else {
-        throw new Error("Response data is undefined");
+        throw new Error('Response data is undefined');
       }
     } catch (error) {
-      console.error("Failed to log in:", error);
+      console.error('Failed to log in:', error);
       throw error;
     }
   };
 
   const logoutUser = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
     setToken(null);
     setUser(null);
   };

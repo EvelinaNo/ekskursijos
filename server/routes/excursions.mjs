@@ -4,6 +4,9 @@ import excursionsController from "../controller/excursionsController.mjs";
 import { validate } from "../middleware/schemaValidator.mjs";
 import { excursionValidationSchema } from "../validators/excursionValidator.mjs";
 import scheduleModel from "../models/scheduleModel.mjs";
+import registrationsController from "../controller/registrationsController.mjs";
+import excursionsModel from "../models/excursionsModel.mjs";
+import registrationsModel from "../models/registrationsModel.mjs";
 
 dotenv.config();
 
@@ -41,21 +44,25 @@ router.get(
   excursionsController.getAverageRatingForExcursion
 );
 
-// ekskursijos schedule gavimas
+// ekskursijos schedule gavimas (netrinti!)
 router.get("/:id/schedule", excursionsController.getExcursionSchedule);
 
-// ekskursijos schedule atnaujinimas
-router.patch(
-  "/:id/schedule",
-  excursionsController.updateExcursionSchedule 
-);
+// ekskursijos schedule atnaujinimas (netrinti!)
+router.patch("/:id/schedule", excursionsController.updateExcursionSchedule);
 
-// registracijos sukurimas
+// registracijos i ekskursija sukurimas
 router.post("/:id/register", excursionsController.createRegistration);
 
+// patikrinti, ar uzregistruotas
 router.get(
-  "/:id/registrationStatus",
-  excursionsController.getRegistrationStatusForUser
+  "/registrationStatus",
+  registrationsController.checkRegistrationStatus
+);
+
+//netrinti, bandau
+router.patch(
+  "/:id/register-edit/:registrationId",
+  excursionsController.updateRegistrationDateTime
 );
 
 export default router;

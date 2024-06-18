@@ -1,4 +1,4 @@
-import { styled } from "styled-components";
+import { styled } from 'styled-components';
 
 const ModalOverlay = styled.div`
   position: fixed;
@@ -56,22 +56,22 @@ const Button = styled.button`
 `;
 
 const ConfirmButton = styled(Button)`
-background-color: #ffffff;
-color: #000;
-border: 1px solid #000;
-&:hover {
-  border: 1px solid #dddddd;
-  transform: scale(1.05);
-}
+  background-color: #ffffff;
+  color: #000;
+  border: 1px solid #000;
+  &:hover {
+    border: 1px solid #dddddd;
+    transform: scale(1.05);
+  }
 `;
 
 const CancelButton = styled(Button)`
-background-color: #ffffff;
-color: #000;
-border: 1px solid #dddddd;
-&:hover {
-  transform: scale(1.05);
-}
+  background-color: #ffffff;
+  color: #000;
+  border: 1px solid #dddddd;
+  &:hover {
+    transform: scale(1.05);
+  }
 `;
 
 export const DeleteModal = ({ excursionId, onClose, onDelete }) => {
@@ -87,14 +87,10 @@ export const DeleteModal = ({ excursionId, onClose, onDelete }) => {
   return (
     <ModalOverlay onClick={handleCancelClick}>
       <ModalContent onClick={(e) => e.stopPropagation()}>
-        <Title>Deletion Confirmation</Title>
-        <Message>
-          Are you sure you want to delete?
-        </Message>
+        <Title>Delete Confirmation</Title>
+        <Message>Are you sure you want to delete?</Message>
         <ButtonContainer>
-          <ConfirmButton onClick={() => handleConfirmClick()}>
-            Yes
-          </ConfirmButton>
+          <ConfirmButton onClick={() => handleConfirmClick()}>Yes</ConfirmButton>
           <CancelButton onClick={handleCancelClick}>No</CancelButton>
         </ButtonContainer>
       </ModalContent>

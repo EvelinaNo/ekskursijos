@@ -1,6 +1,7 @@
 import { pool } from "../db/postgresConnection.mjs";
 
 const registrationsModel = {
+  //netrinti
   getAllRegistrations: async () => {
     try {
       const query = `
@@ -17,6 +18,14 @@ const registrationsModel = {
     }
   },
 
+  getUserRegistrations: async (userId) => {
+    const query = "SELECT excursion_id FROM registrations WHERE user_id = $1";
+    const values = [userId];
+
+    const { rows } = await pool.query(query, values);
+    return rows.map((row) => row.excursion_id);
+  },
+
   confirmRegistration: async (registrationId) => {
     try {
       const query = `
@@ -31,12 +40,17 @@ const registrationsModel = {
     }
   },
 
-  getRegistrationStatusForUser: async () => {
+  // patikrinti, ar sukurta registracija , netrinti
+  isUserRegistered: async (userId, excursionId) => {
     try {
-      const registrations = await pool.query("SELECT * FROM registrations");
-      return registrations.rows;
+      const query =
+        "SELECT * FROM registrations WHERE user_id = $1 AND excursion_id = $2";
+      const values = [userId, excursionId];
+
+      const { rows } = await pool.query(query, values);
+      return rows.length > 0;
     } catch (error) {
-      console.error(error);
+      console.error("Error in isUserRegistered:", error.message);
       throw error;
     }
   },
@@ -70,6 +84,22 @@ const registrationsModel = {
       throw error;
     }
   },
+  // netrinti, bandau
+  updateRegistrationDateTime: async ( date_time, registration_id) => {
+    try {
+      const query = `
+        UPDATE registrations
+        SET date_time = $1
+        WHERE id = $2
+        RETURNING *
+      `;
+      const result = await pool.query(query, [date_time, registration_id]);
+      return result.rows[0];
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  },
 
   deleteRegistration: async (excursionId) => {
     try {
@@ -83,31 +113,15 @@ const registrationsModel = {
       throw error;
     }
   },
-
-  getRegistrationsWithReviewInfo: async () => {
+  // netrinti
+  getRegistrationsCount: async (excursionId) => {
     try {
-      const query = `
-        SELECT 
-            r.id AS registration_id, 
-            e.title AS excursion_title, 
-            e.duration, 
-            e.type, 
-            e.price, 
-            e.image, 
-            e.average_rating, 
-            r.confirmation, 
-            r.name, 
-            r.date_time,
-            r.has_review
-        FROM 
-            registrations r
-        JOIN 
-            excursions e ON r.excursion_id = e.id;
-      `;
-      const result = await pool.query(query);
-      return result.rows;
+      const query =
+        "SELECT COUNT(*) FROM registrations WHERE excursion_id = $1";
+      const result = await pool.query(query, [excursionId]);
+      return parseInt(result.rows[0].count, 10);
     } catch (error) {
-      console.error("Failed to get registrations with review info:", error);
+      console.error("Error in getRegistrationsCount:", error);
       throw error;
     }
   },

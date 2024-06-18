@@ -50,12 +50,12 @@ const usersModel = {
   getUserExcursions: async (userId) => {
     try {
       const query = `
-      SELECT r.id AS registration_id, e.title AS excursion_title, e.duration, e.type, e.price, e.image, e.average_rating, 
+      SELECT r.id AS registration_id, e.id AS excursion_id, e.title AS excursion_title, e.duration, e.type, e.price, e.image, e.average_rating, 
       r.confirmation, r.name, r.date_time
-FROM registrations r
-JOIN excursions e ON r.excursion_id = e.id
-WHERE r.user_id = $1;
-      `;
+      FROM registrations r
+      JOIN excursions e ON r.excursion_id = e.id
+      WHERE r.user_id = $1;
+    `;
       const { rows } = await pool.query(query, [userId]);
       return rows;
     } catch (error) {
@@ -67,60 +67,29 @@ WHERE r.user_id = $1;
     }
   },
 
-  updateVisitedExcursions: async (userId, excursionId) => {
-    try {
+  // updateVisitedExcursions: async (userId, excursionId) => {
+  //   try {
      
-      const user = await usersModel.getUserById(userId);
+  //     const user = await usersModel.getUserById(userId);
 
-      if (!user) {
-        throw new Error("User not found");
-      }
+  //     if (!user) {
+  //       throw new Error("User not found");
+  //     }
 
-      const updatedVisitedExcursions = [...user.visitedExcursions, excursionId];
+  //     const updatedVisitedExcursions = [...user.visitedExcursions, excursionId];
 
   
-      const result = await pool.query(
-        "UPDATE users SET visitedExcursions = $1 WHERE id = $2 RETURNING *",
-        [updatedVisitedExcursions, userId]
-      );
+  //     const result = await pool.query(
+  //       "UPDATE users SET visitedExcursions = $1 WHERE id = $2 RETURNING *",
+  //       [updatedVisitedExcursions, userId]
+  //     );
 
-      return result.rows[0];
-    } catch (error) {
-      console.error(error);
-      throw error;
-    }
-  },
-
-
-  getVisitedExcursions: async (userId) => {
-    const result = await pool.query(
-      "SELECT excursion_id FROM visited_excursions WHERE user_id = $1",
-      [userId]
-    );
-    return result.rows.map((row) => row.excursion_id);
-  },
-
-
-  updateVisitedExcursions: async (userId, excursionId) => {
-    try {
-      const result = await pool.query(
-        "INSERT INTO visited_excursions (user_id, excursion_id) VALUES ($1, $2) ON CONFLICT DO NOTHING RETURNING *",
-        [userId, excursionId]
-      );
-      return result.rows[0];
-    } catch (error) {
-      console.error(error);
-      throw error;
-    }
-  },
-
-  hasVisitedExcursion: async (userId, excursionId) => {
-    const result = await pool.query(
-      "SELECT * FROM visited_excursions WHERE user_id = $1 AND excursion_id = $2",
-      [userId, excursionId]
-    );
-    return result.rows.length > 0;
-  },
+  //     return result.rows[0];
+  //   } catch (error) {
+  //     console.error(error);
+  //     throw error;
+  //   }
+  // },
 
   cancelRegistration: async (registrationId) => {
     try {
@@ -134,6 +103,10 @@ WHERE r.user_id = $1;
       throw error;
     }
   },
+
+
+
+
 };
 
 export default usersModel;

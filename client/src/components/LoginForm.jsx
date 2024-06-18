@@ -5,17 +5,17 @@ import { useForm } from 'react-hook-form';
 import { AuthContext } from '../utils/AuthContext.jsx';
 
 const Container = styled.div`
-display: flex;
-flex-direction: column;
-justify-content: space-between;
-margin: 0 auto;
-align-items: center;
-width: 100%;
-max-width: 25rem;
-line-height: 36px;
-font-size: 1rem;
-color: #666666;
-padding: 50px 30px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  margin: 0 auto;
+  align-items: center;
+  width: 100%;
+  max-width: 25rem;
+  line-height: 36px;
+  font-size: 1rem;
+  color: #666666;
+  padding: 50px 30px;
 `;
 
 const SignUpLink = styled.div`
@@ -28,7 +28,6 @@ const SignUpLink = styled.div`
   font-weight: 500;
   padding-top: 1.125rem;
 `;
-
 
 const Form = styled.form`
   display: flex;
@@ -78,7 +77,10 @@ const Button = styled.button`
   cursor: pointer;
   max-width: 400px;
   font-size: 0.9rem;
-  transition: background-color 0.3s, color 0.3s, transform 0.3s;
+  transition:
+    background-color 0.3s,
+    color 0.3s,
+    transform 0.3s;
   &:hover {
     background-color: #dddddd;
     color: #000000;

@@ -1,6 +1,6 @@
-import { useState } from "react";
-import { styled } from "styled-components";
-import searchIcon from "../assets/search.svg";
+import { useState } from 'react';
+import { styled } from 'styled-components';
+import searchIcon from '../assets/search.svg';
 
 const Container = styled.div`
   position: relative;
@@ -32,7 +32,7 @@ const StyledIcon = styled.img`
 `;
 
 const Search = ({ onSearch }) => {
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState('');
 
   const handleSearch = (event) => {
     const query = event.target.value;
@@ -42,12 +42,7 @@ const Search = ({ onSearch }) => {
 
   return (
     <Container>
-      <StyledInput
-        type="text"
-        placeholder={`Search`}
-        value={searchQuery}
-        onChange={handleSearch}
-      />
+      <StyledInput type="text" placeholder={`Search`} value={searchQuery} onChange={handleSearch} />
       <StyledIcon src={searchIcon} />
     </Container>
   );

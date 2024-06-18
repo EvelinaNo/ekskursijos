@@ -38,14 +38,39 @@ const registrationsController = {
     }
   },
 
-  getRegistrationsDetails: async (req, res) => {
+  // getRegistrationsDetails: async (req, res) => {
+  //   try {
+  //     const registrations =
+  //       await registrationsModel.getRegistrationsWithReviewInfo();
+  //     res.status(200).json(registrations);
+  //   } catch (error) {
+  //     console.error(error);
+  //     res.status(500).json({ message: "Internal Server Error" });
+  //   }
+  // },
+
+
+
+
+
+  checkRegistrationStatus: async (req, res) => {
+    const { userId, excursionId } = req.body;
+  
     try {
-      const registrations =
-        await registrationsModel.getRegistrationsWithReviewInfo();
-      res.status(200).json(registrations);
+      // Проверяем, зарегистрирован ли пользователь на данную экскурсию
+      const alreadyRegistered = await isUserRegistered(userId, excursionId);
+  
+      if (alreadyRegistered) {
+        return res.status(400).json({ message: 'Вы уже зарегистрированы на эту экскурсию.' });
+      }
+  
+      // Создаем новую регистрацию
+      const newRegistration = await createRegistration(userId, excursionId);
+      
+      return res.status(201).json(newRegistration);
     } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: "Internal Server Error" });
+      console.error('Ошибка при регистрации пользователя на экскурсию:', error);
+      return res.status(500).json({ message: 'Ошибка сервера, попробуйте позже.' });
     }
   },
 };

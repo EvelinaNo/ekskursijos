@@ -156,8 +156,8 @@ const EditExcursion = () => {
         const response = await axios.get(`http://localhost:1000/api/triptrack/excursions/${id}`);
         const excursion = response.data;
         const scheduleResponse = await axios.get(`http://localhost:1000/api/triptrack/excursions/${id}/schedule`);
-        const schedule = scheduleResponse.data.map(s => s.date_time);
-  
+        const schedule = scheduleResponse.data.map((s) => s.date_time);
+
         setFormData({
           title: excursion.title,
           image: excursion.image,
@@ -172,11 +172,9 @@ const EditExcursion = () => {
         setLoading(false);
       }
     };
-  
+
     fetchExcursion();
   }, [id]);
-
-
 
   const handleChange = (e, index) => {
     const newDateTimes = [...formData.date_times];
@@ -247,9 +245,9 @@ const EditExcursion = () => {
     if (!validateForm()) {
       return;
     }
-  
+
     setLoading(true);
-  
+
     try {
       await axios.patch(`http://localhost:1000/api/triptrack/excursions/${id}`, {
         title: formData.title,
@@ -258,11 +256,11 @@ const EditExcursion = () => {
         duration: formData.duration,
         price: formData.price,
       });
-  
+
       await axios.patch(`http://localhost:1000/api/triptrack/excursions/${id}/schedule`, {
         date_times: formData.date_times,
       });
-  
+
       navigate(`/excursions/${id}`);
     } catch (error) {
       setErrors({ api: 'Error updating excursion: ' + error.message });
@@ -327,9 +325,7 @@ const EditExcursion = () => {
                   onChange={(e) => handleChange(e, index)}
                   required
                 />
-                {errors[`date_time_${index}`] && (
-                  <ErrorMessage>{errors[`date_time_${index}`]}</ErrorMessage>
-                )}
+                {errors[`date_time_${index}`] && <ErrorMessage>{errors[`date_time_${index}`]}</ErrorMessage>}
                 <AddAndRemoveButton type="button" onClick={() => removeDateTime(index)}>
                   Remove
                 </AddAndRemoveButton>

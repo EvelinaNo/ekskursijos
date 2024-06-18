@@ -5,7 +5,7 @@ const router = express.Router();
 
 router.get("/:id", scheduleController.getExcursionSchedule);
 
-// Naujos datos ir laiko ekskursijai pridejimas
+// Naujos datos ir laiko ekskursijai pridejimas (netrinti)
 router.post("/:id/addTimeSlot", scheduleController.addExcursionTimeSlot);
 // router.put('/:id/updateTimeSlot/:timeSlotId', scheduleController.updateExcursionTimeSlot);
 router.delete(

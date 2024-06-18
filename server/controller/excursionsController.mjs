@@ -17,6 +17,20 @@ const excursionsController = {
     }
   },
 
+  getExcursionsWithRegistrations: async (req, res) => {
+    const { userId } = req.query;
+
+    try {
+      const excursions = await getExcursions();
+      const userRegistrations = await getUserRegistrations(userId);
+
+      res.json({ excursions, userRegistrations });
+    } catch (error) {
+      console.error("Ошибка при получении экскурсий:", error);
+      res.status(500).json({ message: "Ошибка сервера, попробуйте позже." });
+    }
+  },
+
   // ekskursiju paieska
   searchExcursions: async (req, res) => {
     const { searchQuery } = req.query;
@@ -32,13 +46,14 @@ const excursionsController = {
   // naujos ekskursijos sukurimas
   createExcursion: async (req, res) => {
     try {
-      const { title, image, type, duration, price } = req.body;
+      const { title, image, type, duration, price, capacity } = req.body;
       const newExcursion = await excursionsModel.createExcursion(
         title,
         image,
         type,
         duration,
-        price
+        price,
+        capacity
       );
 
       res.status(201).json(newExcursion);
@@ -91,18 +106,16 @@ const excursionsController = {
   // Ekskursijos pasalinimas pagal id
   deleteExcursion: async (req, res) => {
     try {
-      const excursionId = req.params.id;
+      const id = req.params.id;
 
       // Is pradziu trinam reitingus, tvarkarasti, registracijas
-      await excursionsController.deleteRatingsByExcursionId(excursionId);
-      await scheduleModel.deleteExcursionTimeSlot(excursionId);
-      await registrationsModel.deleteRegistration(excursionId);
+      await excursionsModel.deleteRatingsByExcursionId(id);
+      await scheduleModel.deleteExcursionTimeSlot(id);
+      await registrationsModel.deleteRegistration(id);
 
       // Tada trinam pacia ekskursija
 
-      const deletedExcursion = await excursionsModel.deleteExcursion(
-        excursionId
-      );
+      const deletedExcursion = await excursionsModel.deleteExcursion(id);
       if (!deletedExcursion) {
         return res.status(404).json({ message: "Excursion not found" });
       }
@@ -115,10 +128,32 @@ const excursionsController = {
     }
   },
 
-// atsliepimo sukurimas
+  // atsliepimo sukurimas, netrinti
   createReview: async (req, res) => {
     try {
       const { rating, comment, user_id, excursion_id } = req.body;
+
+      // Tikriname, ar vartotojas uzsiregistraves ekskursijai
+      const userRegistered = await registrationsModel.isUserRegistered(
+        user_id,
+        excursion_id
+      );
+      if (!userRegistered) {
+        return res
+          .status(403)
+          .json({ message: "User is not registered for this excursion" });
+      }
+
+      // Tikriname, ar vartotojas dar nepaliko atsiliepimo
+      const existingReview = await excursionsModel.getReviewByUserAndExcursion(
+        user_id,
+        excursion_id
+      );
+      if (existingReview) {
+        return res.status(403).json({
+          message: "User has already left a review for this excursion",
+        });
+      }
 
       // Sukuriame atsiliepima ir susiejame ji su ekskursija
       const newRating = await excursionsModel.createReview(
@@ -161,21 +196,21 @@ const excursionsController = {
   },
 
   // Vidurkio atnaujinimas konkreciai ekskursijai
-  updateAverageRatingForExcursion: async (req, res) => {
-    try {
-      const excursionId = req.params.excursionId;
+  // updateAverageRatingForExcursion: async (req, res) => {
+  //   try {
+  //     const excursionId = req.params.excursionId;
 
-      const updatedExcursion =
-        await ratingnModel.updateAverageRatingForExcursion(excursionId);
+  //     const updatedExcursion =
+  //       await ratingsModel.updateAverageRatingForExcursion(excursionId);
 
-      res.status(200).json(updatedExcursion);
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: "Internal Server Error" });
-    }
-  },
+  //     res.status(200).json(updatedExcursion);
+  //   } catch (error) {
+  //     console.error(error);
+  //     res.status(500).json({ message: "Internal Server Error" });
+  //   }
+  // },
 
-  // Ekskursiju datu ir laiku gavimas
+  // Ekskursiju datu ir laiku gavimas (netrinti!)
   getExcursionSchedule: async (req, res) => {
     try {
       const { id } = req.params;
@@ -187,25 +222,49 @@ const excursionsController = {
     }
   },
 
-  // Ekskursijos datos ir laiko atnaujinimas
-  updateExcursionSchedule : async (req, res) => {
+  // Ekskursijos datos ir laiko atnaujinimas (netrinti!)
+  updateExcursionSchedule: async (req, res) => {
     try {
       const { id } = req.params;
       const { date_times } = req.body;
-  
-      const updatedTimeSlots = await excursionsModel.updateSchedule(id, date_times);
-  
+
+      const updatedTimeSlots = await excursionsModel.updateSchedule(
+        id,
+        date_times
+      );
+
       res.status(200).json(updatedTimeSlots);
     } catch (error) {
       console.error(error);
-      res.status(500).json({ message: "An error occurred while updating time slots" });
+      res
+        .status(500)
+        .json({ message: "An error occurred while updating time slots" });
     }
   },
 
-  // Registracijos i ekskursija sukurimas
+  // Registracijos i ekskursija sukurimas, netrinti
   createRegistration: async (req, res) => {
     try {
       const { user_id, excursion_id, name, date_time } = req.body;
+
+      // Gauname informaciją apie ekskursiją
+      const excursion = await excursionsModel.getExcursionById(excursion_id);
+      if (!excursion) {
+        return res.status(404).json({ message: "Excursion not found" });
+      }
+
+      // Tikrinama, ar neviršytas maksimalus dalyvių skaičius
+      const registrationsCount = await registrationsModel.getRegistrationsCount(
+        excursion_id
+      );
+      if (registrationsCount >= excursion.capacity) {
+        return res.status(403).json({
+          message:
+            "The maximum number of participants on the excursion has been reached",
+        });
+      }
+
+      // sukuriame registracija
       const newRegistration = await excursionsModel.createRegistration(
         user_id,
         excursion_id,
@@ -215,33 +274,38 @@ const excursionsController = {
       res.status(201).json(newRegistration);
     } catch (error) {
       console.error(error);
-      res
-        .status(500)
-        .json({ message: "An error occurred while creating the registration" });
+      if (
+        error.message === "The user is already registered for this excursion"
+      ) {
+        res.status(400).json({
+          message: "The user is already registered for this excursion",
+        });
+      } else {
+        res.status(500).json({ message: "Error creating registration" });
+      }
     }
   },
 
-  getRegistrationStatusForUser: async (req, res) => {
-    const userId = req.user.id; // Gauname dabartinį vartotojo ID (darant prielaidą, kad vartotojas yra autentifikuotas)
-    const excursionId = req.params.excursionId;
+  // netrinti, bandau
+  updateRegistrationDateTime: async (req, res) => {
+    const { date_time } = req.body;
+    const { registration_id } = req.params;
 
     try {
-      // Tikriname, ar vartotojas užsiregistravęs ekskursijai
-      const registration = await registrationsModel.getRegistrationStatusForUser(
-        userId,
-        excursionId
-      );
+      const updatedRegistration =
+        await registrationsModel.updateRegistrationDateTime(
+          date_time,
+          registration_id
+        );
 
-      if (registration) {
-        // Jei registracija rasta, vadinasi, vartotojas jau užsiregistravęs
-        res.status(200).json({ registered: true });
-      } else {
-        // Jei registracija nerasta, vartotojas neregistruojamas
-        res.status(200).json({ registered: false });
+      if (!updatedRegistration) {
+        return res.status(404).json({ message: "Registration not found" });
       }
+
+      res.json(updatedRegistration);
     } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: "Internal Server Error" });
+      console.error("Error updating registration date:", error.message);
+      res.status(500).json({ message: "Server error" });
     }
   },
 };

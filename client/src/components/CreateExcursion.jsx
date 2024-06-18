@@ -63,7 +63,7 @@ const SubmitButton = styled.button`
   width: 100%;
   height: 45px;
   padding: 10px;
-color: #000;
+  color: #000;
   font-size: 0.9rem;
   background-color: #fff;
   border: 1px solid #000000;
@@ -269,39 +269,55 @@ const CreateExcursion = () => {
             maxLength={50}
             required
           />
-         {errors.title && <ErrorMessage>{errors.title}</ErrorMessage>}
+          {errors.title && <ErrorMessage>{errors.title}</ErrorMessage>}
         </FormField>
         <FormField>
           <Label htmlFor="image">Image URL:</Label>
-          <Input type="text" id="image" name="image" value={formData.image} onChange={(e) => setFormData({ ...formData, image: e.target.value })} required />
+          <Input
+            type="text"
+            id="image"
+            name="image"
+            value={formData.image}
+            onChange={(e) => setFormData({ ...formData, image: e.target.value })}
+            required
+          />
           {errors.image && <ErrorMessage>{errors.image}</ErrorMessage>}
         </FormField>
         <FormField>
           <Label htmlFor="type">Type:</Label>
-          <TypeSelect id="type" name="type" value={formData.type} onChange={(e) => setFormData({ ...formData, type: e.target.value })}>
+          <TypeSelect
+            id="type"
+            name="type"
+            value={formData.type}
+            onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+          >
             <option value="group">Group</option>
             <option value="individual">Individual</option>
           </TypeSelect>
         </FormField>
         {formData.date_times.map((date_time, index) => (
-  <FormField key={index}>
-    <Label>Date and time:</Label>
-    <DateTimeField>
-      <Input
-        type="datetime-local"
-        id={`date_time_${index}`}
-        name={`date_time_${index}`}
-        value={date_time}
-        onChange={(e) => handleChange(e, index)}
-        required
-      />
-     {errors[`date_time_${index}`] && <ErrorMessage>{errors[`date_time{index}`]}</ErrorMessage>}
-      <AddandRemoveButton type="button" onClick={() => removeDateTime(index)}>Remove</AddandRemoveButton>
-    </DateTimeField>
-  </FormField>
-))}
+          <FormField key={index}>
+            <Label>Date and time:</Label>
+            <DateTimeField>
+              <Input
+                type="datetime-local"
+                id={`date_time_${index}`}
+                name={`date_time_${index}`}
+                value={date_time}
+                onChange={(e) => handleChange(e, index)}
+                required
+              />
+              {errors[`date_time_${index}`] && <ErrorMessage>{errors[`date_time{index}`]}</ErrorMessage>}
+              <AddandRemoveButton type="button" onClick={() => removeDateTime(index)}>
+                Remove
+              </AddandRemoveButton>
+            </DateTimeField>
+          </FormField>
+        ))}
         <FormField>
-          <AddandRemoveButton type="button" onClick={addDateTime}>Add Date and Time</AddandRemoveButton>
+          <AddandRemoveButton type="button" onClick={addDateTime}>
+            Add Date and Time
+          </AddandRemoveButton>
         </FormField>
         <FormField>
           <Label htmlFor="duration">Duration min:</Label>
@@ -313,18 +329,25 @@ const CreateExcursion = () => {
             onChange={(e) => setFormData({ ...formData, duration: e.target.value })}
             required
           />
-           {errors.duration && <ErrorMessage>{errors.duration}</ErrorMessage>}
+          {errors.duration && <ErrorMessage>{errors.duration}</ErrorMessage>}
         </FormField>
         <FormField>
           <Label htmlFor="price">Price:</Label>
-          <Input type="number" id="price" name="price" value={formData.price} onChange={(e) => setFormData({ ...formData, price: e.target.value })} required />
+          <Input
+            type="number"
+            id="price"
+            name="price"
+            value={formData.price}
+            onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+            required
+          />
           {errors.price && <ErrorMessage>{errors.price}</ErrorMessage>}
         </FormField>
         {errors.api && <ErrorMessage>{errors.api}</ErrorMessage>}
         <SubmitButton type="submit" disabled={loading}>
           {loading ? (
             <LoadingContainer>
-              <SyncLoader size={8} color={"#ffffff"} />
+              <SyncLoader size={8} color={'#ffffff'} />
             </LoadingContainer>
           ) : (
             'Create Excursion'

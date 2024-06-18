@@ -14,7 +14,7 @@ const MainContainer = styled.div`
   flex-grow: 1;
   flex-shrink: 0;
   padding: 4rem 3rem 2rem 3rem;
-  border-bottom: 1px solid #DDDDDD;
+  border-bottom: 1px solid #dddddd;
 `;
 
 const NavbarContainer = styled.nav`
@@ -24,7 +24,6 @@ const NavbarContainer = styled.nav`
   align-items: center;
   // padding: 1rem 4rem;
   height: 50px;
-  
 `;
 
 const LogoContainer = styled.div``;
@@ -150,7 +149,7 @@ function Navbar() {
                     </DropdownItem>
                   ) : (
                     <DropdownItem>
-                      <Link to={`/users/my-excursions/${user.id}`}>My Excursions</Link>
+                      <Link to={`/users/${user.id}/my-excursions`}>My Excursions</Link>
                     </DropdownItem>
                   )}
                   <DropdownItem onClick={handleLogout}>
@@ -161,13 +160,13 @@ function Navbar() {
             </>
           ) : (
             <>
-            <StyledLink to="/login">
-              <Item>Login</Item>
-            </StyledLink>
-           <Divider />
-            <StyledLink to="/registration">
-              <Item>Register</Item>
-            </StyledLink>
+              <StyledLink to="/login">
+                <Item>Login</Item>
+              </StyledLink>
+              <Divider />
+              <StyledLink to="/registration">
+                <Item>Register</Item>
+              </StyledLink>
             </>
           )}
         </IconsContainer>

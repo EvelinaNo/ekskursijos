@@ -4,8 +4,7 @@ import deleteIcon from '../assets/delete.svg';
 import editIcon from '../assets/edit.svg';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../utils/AuthContext';
-import { useContext, useEffect, useState } from 'react';
-import axios from 'axios';
+import { useContext } from 'react';
 import format from 'date-fns/format';
 
 const Container = styled.div`
@@ -119,31 +118,11 @@ export const ExcursionCard = ({
   const navigate = useNavigate();
 
   const { isAuthenticated, isAdmin } = useContext(AuthContext);
-  const [isRegistered, setIsRegistered] = useState(false);
-  const [loading, setLoading] = useState(true);
 
   const onDeleteClick = async () => {
     onDeleteModalOpen(id);
   };
 
-  useEffect(() => {
-    async function fetchRegistrationStatus() {
-      try {
-        const response = await axios.get(`/excursions/${id}/registrationStatus`);
-        setIsRegistered(response.data.registered);
-        setLoading(false); 
-      } catch (error) {
-        console.error('Error fetching registration status:', error);
-        setLoading(false); 
-      }
-    }
-
-    fetchRegistrationStatus();
-  }, [id]);
-
-  if (loading) {
-    return <div>Loading...</div>;
-  }
   return (
     <>
       <Container onClick={() => navigate(`/excursions/${id}`)}>
@@ -181,9 +160,8 @@ export const ExcursionCard = ({
                 e.stopPropagation();
                 navigate(`/excursions/${id}/register`);
               }}
-              disabled={isRegistered}
             >
-              {isRegistered ? 'Already Registered' : 'Register'}
+              Register
             </Button>
           </ButtonContainer>
         )}
